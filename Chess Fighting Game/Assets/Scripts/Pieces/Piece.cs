@@ -9,40 +9,52 @@ public enum PieceColor
 
 public abstract class Piece : MonoBehaviour
 {
-    protected bool selected;
-    protected Space currentSpace;
-    protected PieceColor color;
-    protected List<Space> validSpaces;
+    [SerializeField] protected Space currentSpace;
+    [SerializeField] protected PieceColor color;
+    protected List<Space> validSpaces = new List<Space>();
+    protected bool hasMoved;
+    private bool isSelected;
+    public bool IsSelected { get => isSelected; }
 
     private void Start()
     {
+        currentSpace.Occupy(this);
         FindValidSquares();
     }
 
     public void OnSelect() {
-        if (!selected)
+        if (!isSelected)
         {
             foreach (Space space in validSpaces)
                 space.Highlight();
-            selected = true;
+            isSelected = true;
         }
         else
             OnDeselect();
     }
+
     public void OnDeselect()
     {
         foreach (Space space in validSpaces)
-        {
             space.Dehighlight();
-            validSpaces.Remove(space);
-        }
+        isSelected = false;
     }
-    public void OnMove(Space spaceToMove)
+
+    public void Move(Space spaceToMove)
     {
-        //currentSpace.IsOccupied = false;
+        hasMoved = true;
+        currentSpace.Deoccupy();
         currentSpace = spaceToMove;
-        //currentSpace.IsOccupied = true;
-        FindValidSquares();
+        currentSpace.Occupy(this);
+        OnDeselect();
+        Piece[] pieces = FindObjectsByType<Piece>(FindObjectsSortMode.None);
+        foreach (Piece piece in pieces)
+            piece.FindValidSquares();
     }
+
+    public bool SquareIsValid(Space space) => validSpaces.Contains(space);
+
+    protected bool IsFriendly(Piece other) => other.color == color;
+
     protected abstract void FindValidSquares();
 }

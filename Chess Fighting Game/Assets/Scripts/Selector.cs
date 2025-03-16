@@ -19,10 +19,10 @@ public class Selector : MonoBehaviour
     void Update()
     {
         InputAction moveAction = playerInput.actions["Selector Move"];
+        InputAction selectAction = playerInput.actions["Selector Select"];
         if (moveAction.WasPerformedThisFrame())
         {
             Vector2 input = moveAction.ReadValue<Vector2>();
-            print(input);
             int currentRank = Board.instance.GetRank(currentSpace);
             int currentFile = Board.instance.GetFile(currentSpace);
 
@@ -41,6 +41,8 @@ public class Selector : MonoBehaviour
                     Move(currentRank, currentFile - 1);
             }
         }
+        else if (selectAction.WasPerformedThisFrame())
+            currentSpace.OnSelect();  
     }
 
     private void Move(int rank, int file)

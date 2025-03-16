@@ -14,10 +14,7 @@ public class Board : MonoBehaviour
             instance = this;
         else
             Destroy(gameObject);
-    }
 
-    private void Start()
-    {
         for (int rank = 0; rank < 8; rank++)
         {
             for (int file = 0; file < 8; file++)
@@ -52,6 +49,8 @@ public class Board : MonoBehaviour
         }
         return -1;
     }
+
+    public Space GetSpace(int rank, int file) => board[rank, file];
 
     public bool TryFindSpace(int rank, int file, out Space space)
     {
