@@ -8,38 +8,42 @@ public class Selector : MonoBehaviour
     [SerializeField] private PieceColor color;
     [SerializeField] private Space currentSpace;
 
-    private Vector2 input;
+    private PlayerInput playerInput;
 
     private void Start()
     {
         transform.position = currentSpace.transform.position;
+        playerInput = GetComponent<PlayerInput>();
     }
 
     void Update()
     {
-        if (input != Vector2.zero)
+        InputAction moveAction = playerInput.actions["Selector Move"];
+        if (moveAction.WasPerformedThisFrame())
         {
+            Vector2 input = moveAction.ReadValue<Vector2>();
+            print(input);
             int currentRank = Board.instance.GetRank(currentSpace);
             int currentFile = Board.instance.GetFile(currentSpace);
 
             if (Mathf.Abs(input.y) > Mathf.Abs(input.x))
             {
                 if (input.y > 0)
-                    TryMove(currentRank + 1, currentFile);
+                    Move(currentRank + 1, currentFile);
                 else
-                    TryMove(currentRank - 1, currentFile);
+                    Move(currentRank - 1, currentFile);
             }
             else
             {
                 if (input.x > 0)
-                    TryMove(currentRank, currentFile + 1);
+                    Move(currentRank, currentFile + 1);
                 else
-                    TryMove(currentRank, currentFile - 1);
+                    Move(currentRank, currentFile - 1);
             }
         }
     }
 
-    public void TryMove(int rank, int file)
+    private void Move(int rank, int file)
     {
         if (Board.instance.TryFindSpace(rank, file, out Space spaceToMove))
         {
@@ -48,10 +52,8 @@ public class Selector : MonoBehaviour
         }
         else
         {
-            //Play like a little audio thing to indicate that this is an invalid move;
+            //Play like a little audio thing to indicate that this is an invalid move
             Debug.LogError("Invalid move");
         }
     }
-
-    public void OnMove(InputAction.CallbackContext ctx) => input = ctx.ReadValue<Vector2>();
 }
