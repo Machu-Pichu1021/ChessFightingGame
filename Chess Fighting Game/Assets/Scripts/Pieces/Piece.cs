@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,6 +12,7 @@ public abstract class Piece : MonoBehaviour
 {
     [SerializeField] protected Space currentSpace;
     [SerializeField] protected PieceColor color;
+    public PieceColor Color { get => color; }
     protected List<Space> validSpaces = new List<Space>();
     protected bool hasMoved;
     private bool isSelected;
@@ -19,6 +21,12 @@ public abstract class Piece : MonoBehaviour
     private void Start()
     {
         currentSpace.Occupy(this);
+        StartCoroutine(Setup());
+    }
+
+    private IEnumerator Setup()
+    {
+        yield return new WaitForEndOfFrame();
         FindValidSquares();
     }
 
@@ -39,7 +47,6 @@ public abstract class Piece : MonoBehaviour
             space.Dehighlight();
         isSelected = false;
     }
-
     public void Move(Space spaceToMove)
     {
         hasMoved = true;
@@ -50,6 +57,8 @@ public abstract class Piece : MonoBehaviour
         Piece[] pieces = FindObjectsByType<Piece>(FindObjectsSortMode.None);
         foreach (Piece piece in pieces)
             piece.FindValidSquares();
+
+        ChessManager.instance.EndTurn();
     }
 
     public bool SquareIsValid(Space space) => validSpaces.Contains(space);

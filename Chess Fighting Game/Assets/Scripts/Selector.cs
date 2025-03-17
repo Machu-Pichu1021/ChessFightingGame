@@ -5,10 +5,12 @@ using UnityEngine.InputSystem;
 
 public class Selector : MonoBehaviour
 {
-    [SerializeField] private PieceColor color;
     [SerializeField] private Space currentSpace;
+    private Space selectedSpace;
 
     private PlayerInput playerInput;
+
+    [SerializeField] private AudioClip invalidSFX;
 
     private void Start()
     {
@@ -20,6 +22,7 @@ public class Selector : MonoBehaviour
     {
         InputAction moveAction = playerInput.actions["Selector Move"];
         InputAction selectAction = playerInput.actions["Selector Select"];
+        InputAction deselectAction = playerInput.actions["Selector Deselect"];
         if (moveAction.WasPerformedThisFrame())
         {
             Vector2 input = moveAction.ReadValue<Vector2>();
@@ -42,7 +45,16 @@ public class Selector : MonoBehaviour
             }
         }
         else if (selectAction.WasPerformedThisFrame())
-            currentSpace.OnSelect();  
+        {
+            currentSpace.OnSelect();
+            if (currentSpace.IsOccupied())
+                selectedSpace = currentSpace;
+        }
+        else if (deselectAction.WasPerformedThisFrame())
+        {
+            selectedSpace?.OnDeselect();
+            selectedSpace = null;
+        }
     }
 
     private void Move(int rank, int file)
@@ -54,7 +66,7 @@ public class Selector : MonoBehaviour
         }
         else
         {
-            //Play like a little audio thing to indicate that this is an invalid move
+            AudioManager.instance.PlaySFX(invalidSFX);
             Debug.LogError("Invalid move");
         }
     }

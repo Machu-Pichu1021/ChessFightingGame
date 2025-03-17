@@ -11,6 +11,8 @@ public class Space : MonoBehaviour
     [SerializeField] private GameObject highlighterPrefab;
     private GameObject highlighter;
 
+    [SerializeField] private AudioClip invalidSFX;
+
     public void OnSelect()
     {
         Piece[] pieces = FindObjectsByType<Piece>(FindObjectsSortMode.None);
@@ -18,24 +20,32 @@ public class Space : MonoBehaviour
         if (isSelectingPiece)
         {
             Piece selectedPiece = Array.Find(pieces, piece => piece.IsSelected);
-            if (selectedPiece.SquareIsValid(this))
+            if (IsOccupied() && occupyingPiece.Equals(selectedPiece))
+                occupyingPiece.OnDeselect();
+            else if (selectedPiece.SquareIsValid(this))
                 selectedPiece.Move(this);
             else
             {
-                //Add a audio cue letting the player know this is an invalid interaction
+                AudioManager.instance.PlaySFX(invalidSFX);
                 Debug.LogError("Can't move this piece here!");
             }
         }
         else
         {
-            if (IsOccupied())
+            if (IsOccupied() && occupyingPiece.Color == ChessManager.instance.TurnColor)
                 occupyingPiece.OnSelect();
             else
             {
-                //Add a audio cue letting the player know this is an invalid interaction
+                AudioManager.instance.PlaySFX(invalidSFX);
                 Debug.LogError("No piece on this square!");
             }
         }
+    }
+
+    public void OnDeselect()
+    {
+        if (IsOccupied() && occupyingPiece.Color == ChessManager.instance.TurnColor)
+            occupyingPiece.OnDeselect();
     }
 
     public void Highlight()

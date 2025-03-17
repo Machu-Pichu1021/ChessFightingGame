@@ -13,7 +13,8 @@ public class Pawn : Piece
         {
             if (currentRank == 7)
                 Destroy(gameObject);
-            validSpaces.Add(Board.instance.GetSpace(currentRank + 1, currentFile));
+            if (!Board.instance.GetSpace(currentRank + 1, currentFile).IsOccupied())
+                validSpaces.Add(Board.instance.GetSpace(currentRank + 1, currentFile));
             if (!hasMoved)
                 validSpaces.Add(Board.instance.GetSpace(currentRank + 2, currentFile));
             if (Board.instance.TryFindSpace(currentRank + 1, currentFile - 1, out Space diagonal1) && diagonal1.IsOccupied() && !IsFriendly(diagonal1.OccupyingPiece))
@@ -25,7 +26,8 @@ public class Pawn : Piece
         {
             if (currentRank == 0)
                 Destroy(gameObject);
-            validSpaces.Add(Board.instance.GetSpace(currentRank - 1, currentFile));
+            if (!Board.instance.GetSpace(currentRank - 1, currentFile).IsOccupied())
+                validSpaces.Add(Board.instance.GetSpace(currentRank - 1, currentFile));
             if (!hasMoved)
                 validSpaces.Add(Board.instance.GetSpace(currentRank - 2, currentFile));
             if (Board.instance.TryFindSpace(currentRank - 1, currentFile - 1, out Space diagonal1) && diagonal1.IsOccupied() && !IsFriendly(diagonal1.OccupyingPiece))
