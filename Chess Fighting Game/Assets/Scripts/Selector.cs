@@ -18,6 +18,11 @@ public class Selector : MonoBehaviour
         playerInput = GetComponent<PlayerInput>();
     }
 
+    private void OnEnable()
+    {
+        selectedSpace = null;
+    }
+
     void Update()
     {
         InputAction moveAction = playerInput.actions["Selector Move"];
