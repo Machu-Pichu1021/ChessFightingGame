@@ -47,7 +47,7 @@ public class Selector : MonoBehaviour
         else if (selectAction.WasPerformedThisFrame())
         {
             currentSpace.OnSelect();
-            if (currentSpace.IsOccupied())
+            if (currentSpace.IsOccupied() && currentSpace.OccupyingPiece.Color == ChessManager.instance.TurnColor)
                 selectedSpace = currentSpace;
         }
         else if (deselectAction.WasPerformedThisFrame())
