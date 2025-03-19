@@ -15,6 +15,7 @@ public abstract class Piece : MonoBehaviour
     public PieceColor Color { get => color; }
     protected List<Space> validSpaces = new List<Space>();
     protected bool hasMoved;
+    public bool HasMoved { get => hasMoved; }
     private bool isSelected;
     public bool IsSelected { get => isSelected; }
 
@@ -47,12 +48,37 @@ public abstract class Piece : MonoBehaviour
             space.Dehighlight();
         isSelected = false;
     }
+
     public void Move(Space spaceToMove)
     {
+        if (!hasMoved && this is King)
+        {
+            int currentRank = Board.instance.GetRank(spaceToMove);
+            int moveFile = Board.instance.GetFile(spaceToMove);
+            if (moveFile == 2)
+            {
+                Space rookSpace = Board.instance.GetSpace(currentRank, 0);
+                Piece rook = rookSpace.OccupyingPiece;
+                rookSpace.Deoccupy();
+                rook.currentSpace = Board.instance.GetSpace(currentRank, 3);
+                rook.currentSpace.Occupy(rook);
+            }
+            else if (moveFile == 6)
+            {
+                Space rookSpace = Board.instance.GetSpace(currentRank, 7);
+                Piece rook = rookSpace.OccupyingPiece;
+                rookSpace.Deoccupy();
+                rook.currentSpace = Board.instance.GetSpace(currentRank, 5);
+                rook.currentSpace.Occupy(rook);
+            }
+        }
+
         hasMoved = true;
+
         currentSpace.Deoccupy();
         currentSpace = spaceToMove;
         currentSpace.Occupy(this);
+
         OnDeselect();
         Piece[] pieces = FindObjectsByType<Piece>(FindObjectsSortMode.None);
         foreach (Piece piece in pieces)
