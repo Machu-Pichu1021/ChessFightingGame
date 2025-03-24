@@ -6,7 +6,7 @@ public class Board : MonoBehaviour
 {
     public static Board instance;
 
-    private Space[,] board = new Space[8,8];
+    private Space[,] board = new Space[8, 8];
 
     private void Awake()
     {

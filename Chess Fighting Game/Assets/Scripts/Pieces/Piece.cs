@@ -21,7 +21,7 @@ public abstract class Piece : MonoBehaviour
 
     private void Start()
     {
-        currentSpace.Occupy(this);
+        currentSpace?.Occupy(this);
         StartCoroutine(Setup());
     }
 
@@ -75,6 +75,9 @@ public abstract class Piece : MonoBehaviour
 
         hasMoved = true;
 
+        if (spaceToMove.IsOccupied())
+            GameManager.instance.Box();
+
         currentSpace.Deoccupy();
         currentSpace = spaceToMove;
         currentSpace.Occupy(this);
@@ -86,6 +89,8 @@ public abstract class Piece : MonoBehaviour
 
         ChessManager.instance.EndTurn();
     }
+
+    public void SetCurrentSpace(Space space) => currentSpace = space;
 
     public bool SquareIsValid(Space space) => validSpaces.Contains(space);
 
