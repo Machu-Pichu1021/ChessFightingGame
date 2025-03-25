@@ -218,9 +218,9 @@ GameObject:
   - component: {fileID: 1625640301}
   - component: {fileID: 1625640300}
   - component: {fileID: 1625640299}
+  - component: {fileID: 1625640303}
   - component: {fileID: 1625640298}
   - component: {fileID: 1625640302}
-  - component: {fileID: 1625640303}
   m_Layer: 0
   m_Name: Black Player
   m_TagString: Untagged
@@ -310,7 +310,7 @@ Rigidbody2D:
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: fd2a3c254ca086547b9107bad1d33492, type: 2}
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
@@ -396,6 +396,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   health: 100
   speed: 5
+  accelerationTime: 1
+  jabTime: 1
+  maxJabs: 3
+  shieldPrefab: {fileID: 3556865141942461178, guid: 54f69991104206c4f805f75ac06eb0e7, type: 3}
 --- !u!61 &1625640303
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -433,9 +437,9 @@ GameObject:
   - component: {fileID: 1704774006}
   - component: {fileID: 1704774005}
   - component: {fileID: 1704774004}
+  - component: {fileID: 1704774008}
   - component: {fileID: 1704774003}
   - component: {fileID: 1704774007}
-  - component: {fileID: 1704774008}
   m_Layer: 0
   m_Name: White Player
   m_TagString: Untagged
@@ -525,7 +529,7 @@ Rigidbody2D:
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: fd2a3c254ca086547b9107bad1d33492, type: 2}
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
@@ -611,6 +615,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   health: 100
   speed: 5
+  accelerationTime: 1
+  jabTime: 1
+  maxJabs: 3
+  shieldPrefab: {fileID: 3556865141942461178, guid: 54f69991104206c4f805f75ac06eb0e7, type: 3}
 --- !u!61 &1704774008
 BoxCollider2D:
   m_ObjectHideFlags: 0
