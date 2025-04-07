@@ -3,20 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class Fighter : MonoBehaviour
+public abstract class Fighter : MonoBehaviour
 {
     private PlayerInput playerInput;
-    private Rigidbody2D rb;
-    private Animator animator;
+    protected Rigidbody2D rb;
+    protected Animator animator;
 
-    [SerializeField] private float health = 100;
+    [SerializeField] private float health = 1000;
 
     [SerializeField] private float speed = 5;
-    [Tooltip("The time it takes in seconds for the fighter to reach its max speed.")]
-    [SerializeField] private float accelerationTime = 1;
-    private float t;
 
     private float hitstun;
+    [SerializeField] private Transform groundCheckpoint;
 
     private int jabIndex;
     [Tooltip("The time in seconds before the jab combo resets between each jab hit")]
@@ -30,15 +28,29 @@ public class Fighter : MonoBehaviour
     private bool chargingSmash;
 
     private float shieldHealth = 100;
+    private float shieldStun;
     [SerializeField] private GameObject shieldPrefab;
     private GameObject shieldReference;
     private bool shielding;
+
+    [SerializeField] protected float meter;
+
+    [SerializeField] [HideInInspector] private bool isAttacking;
+
+    [SerializeField] private GameObject hitboxPrefab;
+    [SerializeField] protected Transform hitboxTransform;
+    [SerializeField] [HideInInspector] protected float moveRadius;
+    [SerializeField] [HideInInspector] protected float moveDamage;
+    [SerializeField] [HideInInspector] protected float moveShieldDamage;
+    [SerializeField] [HideInInspector] protected float moveHitstun;
+    [SerializeField] [HideInInspector] protected Vector2 moveLaunchVelocity = Vector2.zero;
+    [SerializeField] [HideInInspector] protected float moveLifetime;
 
     private void Start()
     {
         playerInput = GetComponent<PlayerInput>();
         rb = GetComponent<Rigidbody2D>();
-        //animator = GetComponent<Animator>();
+        animator = GetComponent<Animator>();
     }
 
     private void Update()
@@ -48,37 +60,23 @@ public class Fighter : MonoBehaviour
         InputAction specialAttack = playerInput.actions["Special Button"];
         InputAction shield = playerInput.actions["Shield"];
 
-        if (shield.WasPerformedThisFrame())
-        {
-            shielding = true;
-            shieldReference = Instantiate(shieldPrefab, transform.position, Quaternion.identity);
-        }
-        else if (shield.WasReleasedThisFrame())
-        {
-            shielding = false;
-            Destroy(shieldReference);
-        }
-        
-        if (hitstun <= 0)
-        {
-            Vector2 stickInput = leftStick.ReadValue<Vector2>();
+        bool grounded = IsOnGround();
 
-            if (stickFlickTime == 0 && Mathf.Abs(stickInput.x) > 0.5f)
-                stickFlickTime = Time.time;
-            else if (Mathf.Abs(stickInput.x) < 0.5f)
-                stickFlickTime = 0;
-
-            if (shielding)
+        if (hitstun <= 0 && shieldStun <= 0 && !isAttacking && grounded)
+        {
+            if (shield.WasPerformedThisFrame())
             {
-                shieldReference.transform.localScale = Vector2.one * (shieldHealth / 62.5f);
-                shieldHealth -= Time.deltaTime * 10;
-                print("Shielding");
-                if (Mathf.Abs(stickInput.x) > 0.5f)
-                    print("Roll");
-                else if (stickInput.y < -0.5f)
-                    print("Spot dodge");
+                shielding = true;
+                shieldReference = Instantiate(shieldPrefab, transform);
             }
-            else if (chargingSmash)
+            else if (shield.WasReleasedThisFrame())
+            {
+                shielding = false;
+                Destroy(shieldReference);
+            }
+
+            Vector2 stickInput = leftStick.ReadValue<Vector2>();
+            if (chargingSmash)
             {
                 print("Charging smash");
                 if (lightAttack.WasReleasedThisFrame())
@@ -93,13 +91,38 @@ public class Fighter : MonoBehaviour
                         print("Smash attack Angled Side");
                 }
             }
-            else
+
+            if (stickFlickTime == 0 && Mathf.Abs(stickInput.x) > 0.5f)
+                stickFlickTime = Time.time;
+            else if (Mathf.Abs(stickInput.x) < 0.5f)
+                stickFlickTime = 0;
+
+            if (shielding)
             {
+                print(shieldHealth / 62.5f);
+                shieldReference.transform.localScale = Vector2.one * (shieldHealth / 62.5f);
+                shieldHealth -= Time.deltaTime * 10;
+                if (shieldHealth <= 0)
+                {
+                    shieldStun = 7.5f;
+                    shieldHealth = 100;
+                    Destroy(shieldReference);
+                }
+                if (Mathf.Abs(stickInput.x) > 0.5f)
+                    print("Roll");
+                else if (stickInput.y < -0.5f)
+                    print("Spot dodge");
+            }
+            else if (!chargingSmash) 
+            {
+                shieldHealth += Time.deltaTime * 15;
+                shieldHealth = Mathf.Clamp(shieldHealth, 0, 100);
+
                 if (lightAttack.WasPerformedThisFrame())
                 {
                     if (Mathf.Abs(stickInput.x) < 0.5f)
                     {
-                        print("Jab " + jabIndex);
+                        animator.Play("Jab " + jabIndex);
                         jabIndex++;
                         jabTimer = jabTime;
                         if (jabIndex >= maxJabs)
@@ -110,35 +133,31 @@ public class Fighter : MonoBehaviour
                     }
                     else if (Time.time - stickFlickTime > Time.deltaTime * stickFlickFrames)
                     {
-                        if (Mathf.Abs(rb.velocity.x) >= speed * 0.85f)
-                            print("Dash attack");
+                        if (Mathf.Abs(rb.velocity.x) >= speed * 0.75f)
+                            animator.Play("Dash Attack");
                         else
                             print("Tilt attack");
                     }
                     else
-                    {
                         chargingSmash = true;
-                    }
                 }
                 else if (specialAttack.WasPerformedThisFrame())
                 {
                     if (Mathf.Abs(stickInput.x) > 0.5f)
-                        print("Side Special");
+                        SideB();
                     else if (stickInput.y > 0.5f)
-                        print("Up Special");
+                        UpB();
                     else if (stickInput.y < -0.5f)
-                        print("Down Special");
+                        DownB();
                     else
-                        print("Neutral Special");
+                        NeutralB();
                 }
-                if (Mathf.Abs(stickInput.x) > 0.5f && t < accelerationTime)
-                    t += Time.deltaTime;
-                else if (Mathf.Abs(stickInput.x) > 0.25f)
-                    t = accelerationTime / 2;
-                else
-                    t = 0;
-                Vector2 desiredVelocity = new Vector2(stickInput.x * speed, rb.velocity.y);
-                rb.velocity = Vector2.Lerp(rb.velocity, desiredVelocity, t / accelerationTime);
+
+                rb.velocity = new Vector2(stickInput.x * speed, rb.velocity.y);
+                if (rb.velocity.x > 0.1f)
+                    animator.transform.rotation = Quaternion.Euler(new Vector2(0, 180));
+                else if (rb.velocity.x < -0.1f)
+                    animator.transform.rotation = Quaternion.identity;
             }
         }
 
@@ -147,17 +166,45 @@ public class Fighter : MonoBehaviour
             jabIndex = 0;
 
         hitstun -= Time.deltaTime;
+        shieldStun -= Time.deltaTime;
+
+        animator.SetFloat("xSpeed", Mathf.Abs(rb.velocity.x));
+        animator.SetBool("isAttacking", isAttacking);
+        animator.SetBool("grounded", grounded);
+        animator.SetBool("shielding", shielding);
     }
 
-    public void CreateHitbox(Vector2 position, float radius, float damage, float hitstun, Vector2 launchVelocity)
-    {
+    public abstract void NeutralB();
+    public abstract void SideB();
+    public abstract void UpB();
+    public abstract void DownB();
 
+    private bool IsOnGround()
+    {
+        return Physics2D.Raycast(groundCheckpoint.position, Vector2.down, .1f, LayerMask.NameToLayer("Ground"));
     }
 
-    public void OnHit(float damage, float hitstun, Vector2 launchVelocity)
+    public void CreateHitBox() {
+        Hitbox hitbox = Instantiate(hitboxPrefab, hitboxTransform).GetComponent<Hitbox>();
+        if (animator.transform.rotation == Quaternion.identity)
+            moveLaunchVelocity = new Vector2(-moveLaunchVelocity.x, moveLaunchVelocity.y);
+        hitbox.Initialize(moveDamage, moveShieldDamage, moveRadius, moveHitstun, moveLaunchVelocity, moveLifetime, this);
+    }
+
+    public void OnHit(float damage, float shieldDamage, float hitstun, Vector2 launchVelocity)
     {
-        rb.velocity = launchVelocity;
-        this.hitstun = hitstun;
-        health -= damage;
+        if (!shielding)
+        {
+            rb.velocity = launchVelocity;
+            this.hitstun = hitstun;
+            health -= damage;
+
+            isAttacking = false;
+            jabTimer = 0;
+            jabIndex = 0;
+            shieldStun = 0;
+        }
+        else
+            shieldHealth -= shieldDamage;
     }
 }
