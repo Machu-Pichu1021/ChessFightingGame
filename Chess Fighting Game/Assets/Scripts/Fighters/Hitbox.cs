@@ -9,7 +9,7 @@ public class Hitbox : MonoBehaviour
     protected float shieldDamage;
     protected float hitstun;
     protected Vector2 launchVelocity;
-    private float lifetime;
+    protected float lifetime;
     protected Fighter owner;
 
     private void Awake()
@@ -35,7 +35,7 @@ public class Hitbox : MonoBehaviour
             Destroy(gameObject);
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.TryGetComponent(out Fighter fighter) && !fighter.Equals(owner))
         {

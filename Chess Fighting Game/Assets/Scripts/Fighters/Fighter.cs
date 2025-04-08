@@ -11,7 +11,7 @@ public abstract class Fighter : MonoBehaviour
 
     [SerializeField] private float health = 1000;
 
-    [SerializeField] private float speed = 5;
+    [SerializeField] protected float speed = 5;
 
     private float hitstun;
     [SerializeField] private Transform groundCheckpoint;
@@ -99,8 +99,7 @@ public abstract class Fighter : MonoBehaviour
 
             if (shielding)
             {
-                print(shieldHealth / 62.5f);
-                shieldReference.transform.localScale = Vector2.one * (shieldHealth / 62.5f);
+                shieldReference.transform.localScale = Vector2.one * (shieldHealth / 250);
                 shieldHealth -= Time.deltaTime * 10;
                 if (shieldHealth <= 0)
                 {
